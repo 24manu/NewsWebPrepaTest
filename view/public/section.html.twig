@@ -34,6 +34,17 @@
                         <h1><a href="?article={{ item.thearticleslug }}">{{ item.thearticletitle }}</a></h1>
                         <h2>Posté par : <a href="?user={{ item.idtheuser }}">{{ item.theuserlogin }}</a> le {{ item.thearticledate|date('d/m/Y') }} <br>
 {# Nous avons plusieures sections possibles, il faut les séparer (|||) avant de les afficher en tant que lien, tant qu'il y en a, sinon affichons "Pas de section pour cet article" #}
+                            {% set slugs = item.thesectionslug|split('|||') %}
+                            {% set titles = item.thesectiontitle|split('|||') %}
+
+                            {% for slug in slugs %}
+                            <a href="?section={ slug }}">{{ titles[loop.index0] }}</a>
+                            {% if not loop.last %} | {% endif %}
+
+                            {% else %}
+                            Pas de section pour cette article
+                            {% endfor %}
+
                             <a href="?section={{ item.thesectionslug }}">{{ item.thesectiontitle }}</a>.</h2>
 
 
