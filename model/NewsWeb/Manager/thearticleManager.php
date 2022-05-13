@@ -56,12 +56,33 @@ class thearticleManager implements ManagerInterface
     }
 
     // Récupération de l'article (idthearticle, thearticletitle, thearticletext, thearticleresume, thearticledate ) avec toutes les rubriques avec le lien, l'auteur et le lien vers celui-ci, via son slug
+    // Modifier par MM
     public function thearticleSelectOneBySlug(string $slug): array|bool{
-        $query = $this->connect->prepare("SELECT * FROM thearticle WHERE thearticleslug=?");
-        $query->execute([$slug]);
-        return $query->fetch(\PDO::FETCH_ASSOC);
-    }
+        $sql = "SELECT 
+        a.idthearticle, a.thearticletitle, a.thearticletext, a.thearticleresume, a.thearticledate,
+          GROUP_CONCAT(s.thesectiontitle SEPARATOR '|||') AS thesectiontitle, 
+          GROUP_CONCAT(s.thesectionslug SEPARATOR '|||') AS thesectionslug
+            FROM thearticle a
+            # Jointure MANY to ONE
+            INNER JOIN theuser u
+                ON u.idtheuser = a.theuser_idtheuser 
+            # Many to Many sur 2 tables pour garder toutes les rubriques
+            INNER JOIN thesection_has_thearticle sha2
+                ON sha2.thearticle_idthearticle = a.idthearticle
+            INNER JOIN thesection s
+                ON sha2.thesection_idthesection = s.idthesection
+            # conditions : article validé, utilisateur actif
+            WHERE a.thearticleactivate=1 
+                    AND u.theuseractivate=1
+                    AND a.thearticleslug=?
+            GROUP BY a.idthearticle";
 
+    $prepare = $this->connect->prepare($sql);
+    $prepare->execute([$slug]);
+    $query=$prepare->fetch(\PDO::FETCH_ASSOC);
+        return $query;
+    }
+// Fin de modification MM
 
     // Récupération de tous les articles du site
     public function thearticleSelectAll(): array|string {
